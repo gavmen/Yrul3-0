@@ -16,15 +16,15 @@ KERNEL_BIN = yrul.bin
 
 all: $(KERNEL_BIN)
 
-$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o
+$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o $(SRC)/interrupts.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 # Assembly file for the bootloader
 $(BOOT)/boot.o: $(BOOT)/boot.s
 	$(AS) -o $@ $<
 
-# C source file for the kernel
-$(SRC)/kernel.o: $(SRC)/kernel.c
+# C source files
+$(SRC)/%.o: $(SRC)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
