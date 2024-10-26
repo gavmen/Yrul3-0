@@ -1,1 +1,7 @@
-/yrul-os/cross-compiler
+#Cross-Compiler Bin
+yrul-os/cross-compiler
+
+#Boot and Kernel Bin
+yrul-os/boot/boot.o
+yrul-os/src/kernel.o
+yrul-os/yrul.bin
