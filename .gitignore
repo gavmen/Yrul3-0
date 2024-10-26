@@ -4,4 +4,5 @@ yrul-os/cross-compiler
 #Boot and Kernel Bin
 yrul-os/boot/boot.o
 yrul-os/src/kernel.o
+yrul-os/src/interrupts.o
 yrul-os/yrul.bin
