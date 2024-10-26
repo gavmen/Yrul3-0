@@ -3,6 +3,7 @@
 TARGET = i386-elf
 CC = $(TARGET)-gcc
 LD = $(TARGET)-ld
+AS = $(TARGET)-as
 CFLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 LDFLAGS = -T boot/linker.ld
 
@@ -15,14 +16,19 @@ KERNEL_BIN = yrul.bin
 
 all: $(KERNEL_BIN)
 
-$(KERNEL_BIN): $(SRC)/kernel.o
+$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
-%.o: %.c
+# Assembly file for the bootloader
+$(BOOT)/boot.o: $(BOOT)/boot.s
+	$(AS) -o $@ $<
+
+# C source file for the kernel
+$(SRC)/kernel.o: $(SRC)/kernel.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(SRC)/*.o $(KERNEL_BIN)
+	rm -f $(SRC)/*.o $(BOOT)/*.o $(KERNEL_BIN)
 
 run: all
 	qemu-system-i386 -kernel $(KERNEL_BIN)
