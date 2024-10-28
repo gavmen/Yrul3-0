@@ -24,15 +24,8 @@ halt:
     hlt                  # Halt the CPU
     jmp halt             # Infinite loop to prevent exit
 
-# Load the IDT pointer
-#load_idt:
-#    movl 4(%esp), %eax   # Load the first argument (address of IDT pointer) into eax
-#    lidt (%eax)          # Load the IDT using the address in eax
-#    ret
-
-.section .text
-.global load_idt
-
+# Function to load the IDT pointer
 load_idt:
-    lidt (%esp)
+    movl 4(%esp), %eax   # Load the address of the IDT pointer (passed as an argument)
+    lidt (%eax)          # Load the IDT using the address in eax
     ret

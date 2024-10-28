@@ -4,12 +4,16 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Structure of an IDT entry
 struct idt_entry {
     uint16_t base_low;
-    uint16_t selector;
-    uint8_t  zero;
-    uint8_t  type_attr;
+    uint16_t sel;       // Kernel segment selector
+    uint8_t  always0;
+    uint8_t  flags;     // Type and attributes
     uint16_t base_high;
 } __attribute__((packed));
 
@@ -20,7 +24,11 @@ struct idt_ptr {
 } __attribute__((packed));
 
 // Functions to set up the IDT
-void init_idt(void);
-void isr_handler(void);
+extern void init_idt(void);
+extern void isr_handler(void);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif // INTERRUPTS_H
