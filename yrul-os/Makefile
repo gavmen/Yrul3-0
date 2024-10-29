@@ -1,4 +1,4 @@
-# Makefile for Yrul OS
+# Makefile
 
 TARGET = i386-elf
 CC = $(TARGET)-gcc
@@ -16,15 +16,11 @@ KERNEL_BIN = yrul.bin
 
 all: $(KERNEL_BIN)
 
-$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o $(SRC)/interrupts.o $(SRC)/pic_acknowledge.o
+$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o $(SRC)/interrupts.o $(SRC)/pic_acknowledge.o $(SRC)/io.o
 	$(LD) $(LDFLAGS) -o $@ $^
 
 # Assembly file for the bootloader
 $(BOOT)/boot.o: $(BOOT)/boot.s
-	$(AS) -o $@ $<
-
-# Assembly file for pic_acknowledge
-$(SRC)/pic_acknowledge.o: $(SRC)/pic_acknowledge.s
 	$(AS) -o $@ $<
 
 # C source files

@@ -6,4 +6,5 @@ yrul-os/boot/boot.o
 yrul-os/src/kernel.o
 yrul-os/src/interrupts.o
 yrul-os/src/pic_acknowledge.o
+yrul-os/src/io.o
 yrul-os/yrul.bin
