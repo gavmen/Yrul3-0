@@ -1,12 +1,15 @@
 // src/interrupts.c
 
-#include <stdint.h>
+#include "pic_acknowledge.h"
 #include "io.h"
+//#include "scancode.h"
 #include "interrupts.h"
+#include <stdint.h>
 
 #define SCREEN_WIDTH 80
 #define SCREEN_HEIGHT 25
 #define VIDEO_MEMORY 0xB8000
+// #define KEYBOARD_IRQ 1
 
 struct idt_entry idt[IDT_SIZE];
 struct idt_ptr idtp;
@@ -15,7 +18,7 @@ extern void load_idt(struct idt_ptr *idt_ptr);
 extern void pic_acknowledge(uint8_t irq);
 
 // Scancode to ASCII map for alphanumeric keys
-const char scancode_map[128] = {
+const char scancode[128] = {
     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', /* 0 - 9 */
     '9', '0', '-', '=', '\b', /* Backspace */
     '\t', /* Tab */
@@ -33,6 +36,7 @@ const char scancode_map[128] = {
     /* ... More keys to be added ... */
 };
 
+// Remap the PIC to avoid conflicts with CPU exceptions
 void remap_pic() {
     outb(0x20, 0x11); // Start initialization for master PIC
     outb(0xA0, 0x11); // Start initialization for slave PIC
@@ -46,6 +50,7 @@ void remap_pic() {
     outb(0xA1, 0x0);  // Enable all interrupts on slave PIC
 }
 
+// Set up an IDT entry
 void idt_set_entry(int num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].base_low = base & 0xFFFF;
     idt[num].sel = sel;
@@ -59,19 +64,19 @@ void keyboard_handler() {
     static int position = 0;
     unsigned short *video_memory = (unsigned short *)VIDEO_MEMORY;
 
+    // Debug marker to confirm handler is called
+    video_memory[0] = (0x0F << 8) | 'K';  // Display 'K' in the top-left corner
+
     uint8_t scancode = inb(0x60);  // Read scancode from keyboard port
     if (scancode < 128) {          // Ignore key releases (scancode >= 128)
-        char key = scancode_map[scancode];  // Map scancode to ASCII
-
-        if (key) {
-            video_memory[position++] = (0x0F << 8) | key;  // Display key on screen
-            if (position >= SCREEN_WIDTH * SCREEN_HEIGHT) {
-                position = 0;  // Wrap around if end of screen reached
-            }
+        video_memory[position++] = (0x0F << 8) | (scancode + '0');  // Display raw scancode as character
+        if (position >= SCREEN_WIDTH * SCREEN_HEIGHT) {
+            position = 0;  // Wrap around if end of screen reached
         }
     }
 
-    pic_acknowledge(KEYBOARD_IRQ);  // Acknowledge the interrupt
+    // Acknowledge the interrupt once at the end
+    // pic_acknowledge(KEYBOARD_IRQ);
 }
 
 // Initialize the IDT with the keyboard handler
