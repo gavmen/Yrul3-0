@@ -1,28 +1,24 @@
 # 🖥️ Yrul OS
 
-**Yrul OS** is a simple, educational operating system built from scratch, focusing on low-level hardware interaction, interrupt handling, and keyboard input management.
+**Yrul OS** is a simple, educational operating system built from scratch, current focusing on low-level hardware interaction, interrupt handling, and keyboard input management.
 
-**Yrul OS** é um sistema operacional simples e educacional construído do zero, com foco na interação de hardware de baixo nível, tratamento de interrupções e gerenciamento de entrada de teclado.
+**Yrul OS** é um sistema operacional simples e educacional construído do zero, com foco atual na interação de hardware de baixo nível, tratamento de interrupções e gerenciamento de entrada de teclado.
 
 ---
 
-## 🎯 **Project Objectives / Objetivos do Projeto**
+## 🎯 **Current Project Objectives / Objetivos Atuais do Projeto**
 
 ### **English**
 - Create a minimal OS that boots on x86 architecture
 - Implement proper interrupt handling (PIC and IDT configuration)
 - Develop a working keyboard driver with PS/2 controller support
 - Provide a simple command-line interface
-- Demonstrate low-level programming concepts
-- Serve as an educational platform for OS development
 
 ### **Português**
 - Criar um OS mínimo que inicializa na arquitetura x86
 - Implementar tratamento adequado de interrupções (configuração PIC e IDT)
 - Desenvolver um driver de teclado funcional com suporte ao controlador PS/2
 - Fornecer uma interface de linha de comando simples
-- Demonstrar conceitos de programação de baixo nível
-- Servir como plataforma educacional para desenvolvimento de OS
 
 ---
 
@@ -73,7 +69,7 @@ sudo dnf install gcc gcc-multilib nasm qemu-system-x86
 
 ```bash
 # Clone the repository / Clone o repositório
-git clone [repository-url]
+git clone https://github.com/gavmen/Yrul3-0
 cd Yrul3-0/yrul-os
 
 # Build the OS / Compile o OS
@@ -210,42 +206,6 @@ yrul-os/
 
 ---
 
-## 🎓 **Educational Value / Valor Educacional**
-
-### **Learning Outcomes / Resultados de Aprendizagem**
-
-#### **For Students / Para Estudantes**
-- **Low-level programming concepts** / Conceitos de programação de baixo nível
-- **Hardware-software interaction** / Interação hardware-software
-- **Interrupt handling mechanisms** / Mecanismos de tratamento de interrupções
-- **Memory management basics** / Fundamentos de gerenciamento de memória
-- **Assembly language integration** / Integração com linguagem assembly
-
-#### **For Developers / Para Desenvolvedores**
-- **OS development fundamentals** / Fundamentos de desenvolvimento de OS
-- **Cross-compilation techniques** / Técnicas de compilação cruzada
-- **Hardware emulation with QEMU** / Emulação de hardware com QEMU
-- **Build system design** / Design de sistema de build
-- **Real-time system programming** / Programação de sistemas em tempo real
-
----
-
-## 🤝 **Contributing / Contribuindo**
-
-### **Development Guidelines / Diretrizes de Desenvolvimento**
-
-#### **Code Style / Estilo de Código**
-- **Clean, readable code** / Código limpo e legível
-- **Comprehensive comments** / Comentários abrangentes
-- **Consistent naming conventions** / Convenções de nomenclatura consistentes
-- **Modular design** / Design modular
-
-#### **Testing / Testes**
-- **Test on multiple QEMU versions** / Teste em múltiplas versões do QEMU
-- **Verify on real hardware when possible** / Verifique em hardware real quando possível
-- **Document any compatibility issues** / Documente problemas de compatibilidade
-
----
 
 ## 📜 **License / Licença**
 
