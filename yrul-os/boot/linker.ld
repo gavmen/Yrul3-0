@@ -1,46 +1,51 @@
 OUTPUT_FORMAT(elf32-i386)
 ENTRY(_start)
 
-PHDRS
-{
-    text PT_LOAD FLAGS(5);     /* Executable and readable */
-    rodata PT_LOAD FLAGS(4);   /* Read-only */
-    data PT_LOAD FLAGS(6);     /* Readable and writable */
-    bss PT_LOAD FLAGS(6);      /* Readable and writable */
-}
-
 SECTIONS
 {
     . = 1M;                    /* Set start address to 1MB */
 
-    /* Multiboot header section */
-    .multiboot :
+    /* Multiboot header section - MUST be first */
+    .multiboot ALIGN(4) :
     {
         *(.multiboot)          /* Place the multiboot header here */
-    } :text
+    }
+
+    /* PVH note section for modern QEMU */
+    .note.Xen ALIGN(4) :
+    {
+        LONG(0x0004)           /* Name size */
+        LONG(0x0018)           /* Descriptor size */
+        LONG(0x00000012)       /* Note type (Xen PVH) */
+        BYTE(0x58) BYTE(0x65) BYTE(0x6E) BYTE(0x00) /* "Xen\0" */
+        . = ALIGN(4);
+        QUAD(ABSOLUTE(_start))  /* Entry point */
+        QUAD(0x0)              /* Flags */
+        QUAD(0x0)              /* Reserved */
+    }
 
     /* Text section: contains code */
-    .text :
+    .text ALIGN(4096) :
     {
         *(.text)               /* Place all .text sections here */
-    } :text
+    }
 
     /* Read-only data section */
-    .rodata :
+    .rodata ALIGN(4096) :
     {
         *(.rodata)             /* Place all .rodata sections here */
-    } :rodata
+    }
 
     /* Data section: contains initialized global/static variables */
-    .data :
+    .data ALIGN(4096) :
     {
         *(.data)               /* Place all .data sections here */
-    } :data
+    }
 
     /* BSS section: contains uninitialized global/static variables */
-    .bss :
+    .bss ALIGN(4096) :
     {
-        *(.bss)                /* Place all .bss sections here */
         *(COMMON)              /* Place all common symbols here */
-    } :bss
+        *(.bss)                /* Place all .bss sections here */
+    }
 }

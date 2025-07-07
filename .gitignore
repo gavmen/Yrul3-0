@@ -8,3 +8,6 @@ yrul-os/src/interrupts.o
 yrul-os/src/pic_acknowledge.o
 yrul-os/src/io.o
 yrul-os/yrul.bin
+yrul-os/src/pic_acknowledge.o
+yrul-os/src/keyboard.o
+yrul-os/src/keyboard_interrupt.o

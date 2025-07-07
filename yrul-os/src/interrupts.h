@@ -3,10 +3,10 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
-#include <stdint.h>
+#include "types.h"
 
 #define IDT_SIZE 256
-#define KEYBOARD_IRQ 0x21
+#define KEYBOARD_IRQ 1
 
 // IDT Entry structure
 struct idt_entry {
@@ -27,6 +27,8 @@ struct idt_ptr {
 void init_idt();
 void remap_pic();
 void idt_set_entry(int num, uint32_t base, uint16_t sel, uint8_t flags);
-void keyboard_handler();
+
+// Assembly interrupt handlers
+extern void keyboard_interrupt_wrapper();
 
 #endif // INTERRUPTS_H

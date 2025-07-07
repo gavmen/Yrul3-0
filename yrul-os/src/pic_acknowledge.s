@@ -3,6 +3,7 @@
 
 // Function to acknowledge the interrupt in the PIC
 pic_acknowledge:
+    movl 4(%esp), %eax     # Get the IRQ number from the stack (first parameter)
     cmpb $0x28, %al        # Check if the IRQ number >= 0x28 (IRQ 8-15)
     jb master_eoi          # If IRQ is from master PIC, only send to PIC1
 
