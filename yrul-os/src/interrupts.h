@@ -4,6 +4,7 @@
 #define INTERRUPTS_H
 
 #include "types.h"
+#include "io.h"
 
 #define IDT_SIZE 256
 #define KEYBOARD_IRQ 1
@@ -26,7 +27,8 @@ struct idt_ptr {
 // Function prototypes
 void init_idt();
 void remap_pic();
-void idt_set_entry(int num, uint32_t base, uint16_t sel, uint8_t flags);
+void idt_set_entry(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags);
+void pic_acknowledge(uint8_t irq);
 
 // Assembly interrupt handlers
 extern void keyboard_interrupt_wrapper();

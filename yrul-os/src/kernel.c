@@ -77,51 +77,10 @@ void kernel_main(void) {
     // Set up input area
     keyboard_setup_display();
     
-    // Main system loop
-    int heartbeat = 0;
-    int last_interrupt_count = 0;
-    int polling_mode = 0;
-    
+    // Main system loop - Simplified to be purely interrupt-driven
     while (1) {
-        heartbeat++;
-        
-        // Heartbeat indicator
-        if (heartbeat % 200000 == 0) {
-            unsigned short *video = (unsigned short *)0xB8000;
-            video[24 * 80 + 75] = (0x07 << 8) | ('0' + ((heartbeat / 200000) % 10));
-        }
-        
-        // Check if interrupts are working
-        if (heartbeat % 1000000 == 0) {
-            if (keyboard_interrupt_count == last_interrupt_count) {
-                // Switch to polling mode
-                if (!polling_mode) {
-                    polling_mode = 1;
-                    unsigned short *video = (unsigned short *)0xB8000;
-                    video[24 * 80 + 70] = (0x0C << 8) | 'P';
-                    video[24 * 80 + 71] = (0x0C << 8) | 'O';
-                    video[24 * 80 + 72] = (0x0C << 8) | 'L';
-                    video[24 * 80 + 73] = (0x0C << 8) | 'L';
-                }
-            } else {
-                last_interrupt_count = keyboard_interrupt_count;
-                if (polling_mode) {
-                    polling_mode = 0;
-                    unsigned short *video = (unsigned short *)0xB8000;
-                    video[24 * 80 + 70] = (0x0A << 8) | 'I';
-                    video[24 * 80 + 71] = (0x0A << 8) | 'R';
-                    video[24 * 80 + 72] = (0x0A << 8) | 'Q';
-                    video[24 * 80 + 73] = (0x0A << 8) | ' ';
-                }
-            }
-        }
-        
-        // Use polling if interrupts are not working
-        if (polling_mode && heartbeat % 5000 == 0) {
-            keyboard_poll();
-        }
-        
-        // CPU rest
+        // Halt the CPU until the next interrupt arrives.
+        // This is an efficient way to wait for events like keyboard input.
         __asm__ volatile("hlt");
     }
 }

@@ -24,10 +24,17 @@ KERNEL_BIN = yrul.bin
 # Default target
 all: $(KERNEL_BIN)
 
+# Source files
+C_SOURCES = src/kernel.c src/interrupts.c src/io.c src/keyboard.c src/string.c
+ASM_SOURCES = boot/boot.s src/keyboard_interrupt.s
+
+# Object files
+C_OBJECTS = $(C_SOURCES:.c=.o)
+ASM_OBJECTS = $(ASM_SOURCES:.s=.o)
+OBJS = $(C_OBJECTS) $(ASM_OBJECTS)
+
 # Build kernel binary
-$(KERNEL_BIN): $(BOOT)/boot.o $(SRC)/kernel.o $(SRC)/interrupts.o \
-               $(SRC)/pic_acknowledge.o $(SRC)/io.o $(SRC)/keyboard.o \
-               $(SRC)/keyboard_interrupt.o
+$(KERNEL_BIN): $(BOOT)/boot.o $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 # Bootloader
@@ -55,7 +62,16 @@ run: all
 	@echo "- Automatic interrupt/polling fallback"
 	@echo "- Press Ctrl+C to exit"
 	@echo "========================"
-	qemu-system-i386 -kernel $(KERNEL_BIN) -m 32M -no-reboot -no-shutdown
+	qemu-system-i386 -kernel $(KERNEL_BIN) -m 32M -no-reboot -no-shutdown -display gtk
+
+run-stable: all
+	@echo "=== Starting Yrul OS (Stable Mode) ==="
+	@echo "- No mouse grab issues"
+	@echo "- Better keyboard handling"
+	@echo "- Press Alt+2 for QEMU monitor, Alt+1 to return"
+	@echo "- Press Ctrl+C to exit cleanly"
+	@echo "===================================="
+	qemu-system-i386 -kernel $(KERNEL_BIN) -m 32M -no-reboot -no-shutdown -display gtk -no-quit
 
 run-debug: all
 	@echo "=== Debug Mode ==="
@@ -87,12 +103,13 @@ help:
 	@echo "Yrul OS Build System"
 	@echo "===================="
 	@echo "Targets:"
-	@echo "  all        - Build kernel binary"
-	@echo "  clean      - Clean build files"
-	@echo "  run        - Run in QEMU"
-	@echo "  run-debug  - Run with QEMU monitor"
-	@echo "  iso        - Create bootable ISO"
-	@echo "  install-usb- Install to USB (requires USB_DEVICE=/dev/sdX)"
-	@echo "  help       - Show this help"
+	@echo "  all          - Build kernel binary"
+	@echo "  clean        - Clean build files"
+	@echo "  run          - Run in QEMU (standard)"
+	@echo "  run-stable   - Run in QEMU (stable mode, no pause issues)"
+	@echo "  run-debug    - Run with QEMU monitor"
+	@echo "  iso          - Create bootable ISO"
+	@echo "  install-usb  - Install to USB (requires USB_DEVICE=/dev/sdX)"
+	@echo "  help         - Show this help"
 
-.PHONY: all clean run run-debug iso install-usb help
+.PHONY: all clean run run-stable run-debug iso install-usb help

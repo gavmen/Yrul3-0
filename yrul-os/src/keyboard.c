@@ -3,13 +3,33 @@
 
 #include "keyboard.h"
 #include "io.h"
+#include "string.h"
+
+// Forward declarations
+static void execute_command(const char *cmd);
+static void show_help(void);
+static void clear_screen_area(void);
+static void show_system_info(void);
+static void process_command(void);
+static void clear_input_line(void);
+static void update_cursor(void);
+static void show_test_pattern(void);
+static void show_unknown_command(void);
+extern void pic_acknowledge(uint8_t irq);
 
 // Video memory and cursor management
 static unsigned short *video_memory = (unsigned short *)0xB8000;
 static int cursor_x = 2;  // Start after prompt ">"
-static int cursor_y = 22; // Input line
 static char input_buffer[80];
 static int buffer_index = 0;
+
+// Helper function to print a string to a specific line
+static void print_string_to_line(const char* str, int line, uint8_t color) {
+    int pos = line * 80;
+    for (int i = 0; str[i] != '\0' && i < 80; i++) {
+        video_memory[pos + i] = (color << 8) | str[i];
+    }
+}
 
 // Interrupt tracking
 volatile int keyboard_interrupt_count = 0;
@@ -19,55 +39,43 @@ volatile int keyboard_interrupt_count = 0;
 #define INPUT_START_X 2
 #define INPUT_MAX_X 79
 
-// Complete scancode to ASCII mapping
+// Scancode to ASCII mapping for QEMU's translated scancode set
 static const char scancode_to_ascii[128] = {
-    0,  27, '1', '2', '3', '4', '5', '6', '7', '8',    // 0-9
-    '9', '0', '-', '=', 8,   9,                       // 10-15: Backspace, Tab
-    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', // 16-25
-    '[', ']', 13,                                     // 26-28: Enter
-    0,                                                // 29: Ctrl
-    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', // 30-39
-    '\'', '`', 0, '\\',                               // 40-43: Left shift
-    'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', // 44-53
-    0, '*', 0, ' ',                                   // 54-57: Right shift, Alt, Space
-    [58 ... 127] = 0                                  // Rest as zeros
+    //  0     1     2     3     4     5     6     7     8     9     A     B     C     D     E     F
+      0,    0,   '1',  '2',  '3',  '4',  '5',  '6',  '7',  '8',  '9',  '0',  '-',  '=',    8,   '\t', // 0x00-0x0F
+     'q',  'w',  'e',  'r',  't',  'y',  'u',  'i',  'o',  'p',  '[',  ']',   13,   0,   'a',  's',   // 0x10-0x1F
+     'd',  'f',  'g',  'h',  'j',  'k',  'l',  ';', '\'',  '`',   0,  '\\',  'z',  'x',  'c',  'v',   // 0x20-0x2F
+     'b',  'n',  'm',  ',',  '.',  '/',    0,    0,    0,   ' ',   0,    0,    0,    0,    0,    0,   // 0x30-0x3F
+      0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   // 0x40-0x4F
+      0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   // 0x50-0x5F
+      0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,   // 0x60-0x6F
+      0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0    // 0x70-0x7F
 };
 
 // Core keyboard functions
-static void keyboard_wait(void) {
-    while (inb(KEYBOARD_STATUS_PORT) & KEYBOARD_STATUS_IN_FULL);
-}
-
-static uint8_t keyboard_read_data(void) {
-    return inb(KEYBOARD_DATA_PORT);
-}
-
 static uint8_t keyboard_read_status(void) {
     return inb(KEYBOARD_STATUS_PORT);
 }
 
-static void keyboard_write_cmd(uint8_t cmd) {
-    keyboard_wait();
-    outb(KEYBOARD_COMMAND_PORT, cmd);
+static uint8_t keyboard_read_data(void) {
+    // Poll until data is available
+    while (!(keyboard_read_status() & KEYBOARD_STATUS_OUT_FULL));
+    return inb(KEYBOARD_DATA_PORT);
 }
 
 static void keyboard_write_data(uint8_t data) {
-    keyboard_wait();
+    // Poll until controller is ready for data
+    while (keyboard_read_status() & KEYBOARD_STATUS_IN_FULL);
     outb(KEYBOARD_DATA_PORT, data);
 }
 
 // Display functions
 static void update_cursor(void) {
-    // Clear old cursor
-    for (int i = INPUT_START_X; i < INPUT_MAX_X; i++) {
-        if ((video_memory[INPUT_LINE * 80 + i] & 0xFF) == '_') {
-            video_memory[INPUT_LINE * 80 + i] = (0x0F << 8) | ' ';
-        }
-    }
-    // Show cursor at current position
-    if (cursor_x < INPUT_MAX_X) {
-        video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | '_';
-    }
+    unsigned short position = INPUT_LINE * 80 + cursor_x;
+
+    // Send the cursor position to the VGA controller
+    outb(0x3D4, (unsigned char)((position >> 8) & 0xFF));
+    outb(0x3D5, (unsigned char)(position & 0xFF));
 }
 
 static void clear_input_line(void) {
@@ -82,10 +90,21 @@ static void clear_input_line(void) {
     update_cursor();
 }
 
+// Command history management
+static char last_command[80];
+static int command_display_timer = 0;
+#define COMMAND_DISPLAY_TIME 2000  // Show command for ~2000 cycles (more persistent)
+
 static void process_command(void) {
     input_buffer[buffer_index] = '\0';
     
-    // Show processed command on line 23
+    // Store command in history
+    for (int i = 0; i < 80 && i < buffer_index; i++) {
+        last_command[i] = input_buffer[i];
+    }
+    last_command[buffer_index] = '\0';
+    
+    // Show processed command on line 23 with persistence
     for (int i = 0; i < 80; i++) {
         video_memory[23 * 80 + i] = (0x07 << 8) | ' ';
     }
@@ -95,147 +114,146 @@ static void process_command(void) {
         video_memory[23 * 80 + i] = (0x0E << 8) | prefix[i];
     }
     
-    for (int i = 0; input_buffer[i] && i < 70; i++) {
-        video_memory[23 * 80 + 5 + i] = (0x0A << 8) | input_buffer[i];
+    // Display the command in green
+    for (int i = 0; last_command[i] && i < 70; i++) {
+        video_memory[23 * 80 + 5 + i] = (0x0A << 8) | last_command[i];
+    }
+    
+    // Set timer for command persistence
+    command_display_timer = COMMAND_DISPLAY_TIME;
+    
+    // Execute basic commands
+    if (buffer_index > 0) {
+        execute_command(input_buffer);
     }
     
     clear_input_line();
 }
 
-// Keyboard initialization
+// Basic command execution - ROBUST
+static void execute_command(const char *cmd) {
+    // Show execution indicator
+    video_memory[74] = (0x0C << 8) | 'E';
+    video_memory[75] = (0x0C << 8) | 'X';
+    video_memory[76] = (0x0C << 8) | 'E';
+    
+    // Use strcmp for robust command matching
+    if (strcmp(cmd, "help") == 0) {
+        show_help();
+    } else if (strcmp(cmd, "clear") == 0) {
+        clear_screen_area();
+    } else if (strcmp(cmd, "info") == 0) {
+        show_system_info();
+    } else if (strcmp(cmd, "test") == 0) {
+        show_test_pattern();
+    } else {
+        show_unknown_command();
+    }
+}
+
+// Command implementations
+static void clear_command_output_area(void) {
+    for (int line = 15; line <= 21; line++) {
+        for (int col = 0; col < 80; col++) {
+            video_memory[line * 80 + col] = (0x0F << 8) | ' ';
+        }
+    }
+}
+
+static void show_help(void) {
+    clear_command_output_area();
+    print_string_to_line("YRUL OS COMMANDS:", 15, 0x0E);
+    print_string_to_line("help  - Show this help", 16, 0x0F);
+    print_string_to_line("clear - Clear command area", 17, 0x0F);
+    print_string_to_line("info  - System information", 18, 0x0F);
+    print_string_to_line("test  - Display test pattern", 19, 0x0F);
+    print_string_to_line("Use Backspace to edit, Enter to execute", 21, 0x0F);
+}
+
+// Clear command area
+static void clear_screen_area(void) {
+    clear_command_output_area();
+}
+
+// System info - IMPROVED
+static void show_system_info(void) {
+    clear_command_output_area();
+    print_string_to_line("SYSTEM INFORMATION:", 15, 0x0E);
+    print_string_to_line("OS: Yrul OS v1.2", 16, 0x0B);
+    print_string_to_line("Architecture: x86 32-bit", 17, 0x0B);
+    print_string_to_line("Memory: VGA Text Mode (0xB8000)", 18, 0x0B);
+    print_string_to_line("Keyboard: PS/2 Controller", 19, 0x0B);
+    print_string_to_line("Status: Running in interrupt mode", 20, 0x0B);
+
+    // Show interrupt count
+    int interrupts = keyboard_interrupt_count;
+    int pos = 21 * 80;
+    const char *prefix = "Interrupts: ";
+    for (int i = 0; prefix[i]; i++) {
+        video_memory[pos + i] = (0x0A << 8) | prefix[i];
+    }
+    
+    // Simple number to string conversion
+    int digit_pos = pos + 12;
+    if (interrupts == 0) {
+        video_memory[digit_pos] = (0x0A << 8) | '0';
+    } else {
+        int temp = interrupts;
+        int digits = 0;
+        while (temp > 0) {
+            temp /= 10;
+            digits++;
+        }
+        for (int i = digits - 1; i >= 0; i--) {
+            video_memory[digit_pos + i] = (0x0A << 8) | ('0' + (interrupts % 10));
+            interrupts /= 10;
+        }
+    }
+}
+
+// Keyboard initialization - SIMPLIFIED
 void keyboard_init(void) {
-    // Disable PS/2 port
-    keyboard_write_cmd(KEYBOARD_CMD_DISABLE_PS2);
-    
-    // Flush output buffer
-    while (keyboard_read_status() & KEYBOARD_STATUS_OUT_FULL) {
-        keyboard_read_data();
-    }
-    
-    // Configure controller
-    keyboard_write_cmd(KEYBOARD_CMD_READ_CONFIG);
-    while (!(keyboard_read_status() & KEYBOARD_STATUS_OUT_FULL));
-    uint8_t config = keyboard_read_data();
-    
-    config |= 0x01;   // Enable interrupt
-    config &= ~0x40;  // Disable translation
-    
-    keyboard_write_cmd(KEYBOARD_CMD_WRITE_CONFIG);
-    keyboard_write_data(config);
-    
-    // Enable PS/2 port
-    keyboard_write_cmd(KEYBOARD_CMD_ENABLE_PS2);
-    
-    // Reset keyboard
-    keyboard_write_data(KEYBOARD_CMD_RESET);
-    
-    // Wait for reset completion
-    int timeout = 10000;
-    while (timeout-- > 0) {
-        if (keyboard_read_status() & KEYBOARD_STATUS_OUT_FULL) {
-            uint8_t response = keyboard_read_data();
-            if (response == 0xAA) break; // Self-test passed
-        }
+    // Flush the keyboard buffer thoroughly
+    while (inb(KEYBOARD_STATUS_PORT) & KEYBOARD_STATUS_OUT_FULL) {
+        inb(KEYBOARD_DATA_PORT);
     }
 }
 
-// Main keyboard interrupt handler
+// Main keyboard interrupt handler - CLEANED
 void keyboard_handler(void) {
+    uint8_t scancode = inb(KEYBOARD_DATA_PORT);
     keyboard_interrupt_count++;
-    
-    // Show interrupt count (debug indicator)
-    video_memory[79] = (0x0C << 8) | ('0' + (keyboard_interrupt_count % 10));
-    
-    uint8_t status = keyboard_read_status();
-    
-    if (status & KEYBOARD_STATUS_OUT_FULL) {
-        uint8_t scancode = keyboard_read_data();
-        
-        // Show scancode in hex (debug)
-        static const char hex[] = "0123456789ABCDEF";
-        video_memory[77] = (0x0E << 8) | hex[(scancode >> 4) & 0xF];
-        video_memory[78] = (0x0E << 8) | hex[scancode & 0xF];
-        
-        // Process only key press (not release)
-        if (!(scancode & 0x80)) {
-            char ascii = 0;
-            if (scancode < 128) {
-                ascii = scancode_to_ascii[scancode];
+
+    // Ignore key release events (top bit set) and special codes
+    if (scancode > 0x80 || scancode == 0xFA || scancode == 0xFE) {
+        pic_acknowledge(1);
+        return;
+    }
+
+    char ascii_char = scancode_to_ascii[scancode];
+
+    if (ascii_char) {
+        if (ascii_char == 13) { // Enter key
+            process_command();
+        } else if (ascii_char == 8) { // Backspace
+            if (buffer_index > 0) {
+                buffer_index--;
+                cursor_x--;
+                video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | ' ';
             }
-            
-            if (ascii != 0) {
-                if (ascii == 13 || ascii == '\n') { // Enter
-                    process_command();
-                } else if (ascii == 8) { // Backspace
-                    if (cursor_x > INPUT_START_X && buffer_index > 0) {
-                        cursor_x--;
-                        buffer_index--;
-                        video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | ' ';
-                        input_buffer[buffer_index] = 0;
-                        update_cursor();
-                    }
-                } else if (ascii >= 32 && ascii <= 126) { // Printable characters
-                    if (cursor_x < INPUT_MAX_X && buffer_index < 79) {
-                        video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | ascii;
-                        input_buffer[buffer_index] = ascii;
-                        buffer_index++;
-                        cursor_x++;
-                        update_cursor();
-                    }
-                }
+        } else { // Printable character
+            if (buffer_index < sizeof(input_buffer) - 1 && cursor_x < INPUT_MAX_X) {
+                input_buffer[buffer_index++] = ascii_char;
+                video_memory[INPUT_LINE * 80 + cursor_x++] = (0x0F << 8) | ascii_char;
             }
         }
     }
-    
-    // Acknowledge interrupt
-    extern void pic_acknowledge(uint8_t irq);
-    pic_acknowledge(1);
+
+    update_cursor();
+    pic_acknowledge(1); // Acknowledge interrupt at the end
 }
 
-// Polling fallback (if interrupts fail)
-void keyboard_poll(void) {
-    static int poll_count = 0;
-    poll_count++;
-    
-    // Show polling indicator
-    video_memory[76] = (0x0C << 8) | 'P';
-    video_memory[75] = (0x0C << 8) | ('0' + (poll_count % 10));
-    
-    uint8_t status = keyboard_read_status();
-    
-    if (status & KEYBOARD_STATUS_OUT_FULL) {
-        uint8_t scancode = keyboard_read_data();
-        
-        if (!(scancode & 0x80)) { // Key press only
-            char ascii = 0;
-            if (scancode < 128) {
-                ascii = scancode_to_ascii[scancode];
-            }
-            
-            if (ascii != 0) {
-                if (ascii == 13) {
-                    process_command();
-                } else if (ascii == 8) {
-                    if (cursor_x > INPUT_START_X && buffer_index > 0) {
-                        cursor_x--;
-                        buffer_index--;
-                        video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | ' ';
-                        input_buffer[buffer_index] = 0;
-                        update_cursor();
-                    }
-                } else if (ascii >= 32 && ascii <= 126) {
-                    if (cursor_x < INPUT_MAX_X && buffer_index < 79) {
-                        video_memory[INPUT_LINE * 80 + cursor_x] = (0x0F << 8) | ascii;
-                        input_buffer[buffer_index] = ascii;
-                        buffer_index++;
-                        cursor_x++;
-                        update_cursor();
-                    }
-                }
-            }
-        }
-    }
-}
+// Polling fallback is no longer needed and has been removed.
 
 // Initialize input area
 void keyboard_setup_display(void) {
@@ -243,4 +261,19 @@ void keyboard_setup_display(void) {
     video_memory[INPUT_LINE * 80] = (0x0A << 8) | '>';
     video_memory[INPUT_LINE * 80 + 1] = (0x0A << 8) | ' ';
     clear_input_line();
+}
+
+// New command functions
+static void show_test_pattern(void) {
+    clear_command_output_area();
+    // Display a colorful test pattern
+    for (int i = 0; i < 60; i++) {
+        int color = (i % 7) + 1; // Cycle through colors 1-7
+        video_memory[20 * 80 + i] = (color << 8) | ('A' + (i % 26));
+    }
+}
+
+static void show_unknown_command(void) {
+    clear_command_output_area();
+    print_string_to_line("Unknown command. Type 'help' for a list of commands.", 21, 0x0C);
 }

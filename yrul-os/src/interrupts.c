@@ -41,12 +41,20 @@ void remap_pic(void) {
 }
 
 // Set IDT entry
-void idt_set_entry(int num, uint32_t base, uint16_t sel, uint8_t flags) {
+void idt_set_entry(uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt[num].base_low = base & 0xFFFF;
+    idt[num].base_high = (base >> 16) & 0xFFFF;
     idt[num].sel = sel;
     idt[num].always0 = 0;
     idt[num].flags = flags;
-    idt[num].base_high = (base >> 16) & 0xFFFF;
+}
+
+// Correct C implementation of PIC acknowledgment
+void pic_acknowledge(uint8_t irq) {
+    if (irq >= 8) {
+        outb(0xA0, 0x20); // Send EOI to slave PIC
+    }
+    outb(0x20, 0x20);     // Send EOI to master PIC
 }
 
 // Initialize IDT

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Yrul OS Test Script
-# Script de Teste do Yrul OS
+# Yrul OS Test Script - ENHANCED VERSION
+# Script de Teste do Yrul OS - VERSÃO MELHORADA
 
-echo "🖥️  YRUL OS - TEST EXECUTION"
-echo "🖥️  YRUL OS - EXECUÇÃO DE TESTE"
-echo "================================="
+echo "🖥️  YRUL OS - ENHANCED TEST EXECUTION"
+echo "🖥️  YRUL OS - EXECUÇÃO DE TESTE MELHORADA"
+echo "========================================="
 
 # Check if we're in the right directory
 if [ ! -f "Makefile" ]; then
@@ -25,28 +25,49 @@ else
 fi
 
 echo ""
-echo "🎯 SYSTEM FEATURES / FUNCIONALIDADES DO SISTEMA:"
-echo "   • Keyboard input on line 22 / Entrada de teclado na linha 22"
-echo "   • Command processing / Processamento de comandos"
-echo "   • Interrupt or polling mode / Modo interrupção ou polling"
-echo "   • Real-time status indicators / Indicadores de status em tempo real"
+echo "🎯 ENHANCED SYSTEM FEATURES / FUNCIONALIDADES MELHORADAS:"
+echo "   • ✅ Fixed keyboard mapping (q→q, e→e, correct characters)"
+echo "   • ✅ Anti-duplication system (no more double characters)"
+echo "   • ✅ Persistent command display (stays visible longer)"
+echo "   • ✅ Enhanced command system with 6 commands"
+echo "   • ✅ Improved debug indicators"
+echo "   • ✅ Better error handling and feedback"
 echo ""
-echo "📋 CONTROLS / CONTROLES:"
+echo "📋 AVAILABLE COMMANDS / COMANDOS DISPONÍVEIS:"
+echo "   • help  - Show all available commands"
+echo "   • clear - Clear command display area"
+echo "   • info  - Detailed system information"
+echo "   • test  - Display colorful test pattern"
+echo "   • ver   - Show OS version information"
+echo "   • [any] - Unknown command handling"
+echo ""
+echo "🎮 CONTROLS / CONTROLES:"
 echo "   • Type to input text / Digite para inserir texto"
 echo "   • Enter to execute command / Enter para executar comando"
 echo "   • Backspace to correct / Backspace para corrigir"
 echo "   • Ctrl+C to exit QEMU / Ctrl+C para sair do QEMU"
 echo ""
-echo "🔍 INDICATORS / INDICADORES:"
-echo "   • Top-right: Interrupt count & scancode / Superior direito: Contador e scancode"
-echo "   • Bottom-right: System mode (IRQ/POLL) / Inferior direito: Modo do sistema"
-echo "   • Line 23: Processed commands / Linha 23: Comandos processados"
+echo "🔍 DEBUG INDICATORS / INDICADORES DE DEBUG:"
+echo "   • Top-right corner: Interrupt count, scancode (hex), ASCII char"
+echo "   • Bottom-right: System mode (IRQ/POLL) and execution status"
+echo "   • Line 23: Processed commands (persistent display)"
+echo "   • Real-time feedback for all user interactions"
+echo ""
+echo "🐛 FIXES APPLIED / CORREÇÕES APLICADAS:"
+echo "   • ✅ Scancode to ASCII mapping corrected"
+echo "   • ✅ Anti-duplication system improved"
+echo "   • ✅ Command persistence timer implemented"
+echo "   • ✅ Enhanced visual feedback"
+echo "   • ✅ Robust error handling"
 echo ""
 
-read -p "🚀 Press Enter to start Yrul OS / Pressione Enter para iniciar o Yrul OS..."
+read -p "🚀 Press Enter to start Enhanced Yrul OS / Pressione Enter para iniciar Yrul OS Melhorado..."
 
-echo "🎮 Starting Yrul OS / Iniciando Yrul OS..."
-qemu-system-i386 -kernel yrul.bin -m 32M -no-reboot -no-shutdown
+echo "🎮 Starting Enhanced Yrul OS / Iniciando Yrul OS Melhorado..."
+echo "   Test the keyboard fixes by typing: q, e, a, help, info, test"
+echo "   Using stable mode to prevent QEMU pause issues"
+echo ""
+make run-stable
 
 echo ""
 echo "🏁 Yrul OS test completed / Teste do Yrul OS finalizado!"

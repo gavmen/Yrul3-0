@@ -11,3 +11,7 @@ yrul-os/yrul.bin
 yrul-os/src/pic_acknowledge.o
 yrul-os/src/keyboard.o
 yrul-os/src/keyboard_interrupt.o
+yrul-os/src/string.o
+
+#Infos
+yrul-os/FIXES_IMPLEMENTED.md
