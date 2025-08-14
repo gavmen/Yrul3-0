@@ -3,7 +3,11 @@
 echo "Function Validation Test"
 echo ""
 
-cd /home/gabriel/Yrul3-0/yrul-os
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+cd "$PROJECT_DIR"
 
 # Ensure build is clean
 make clean > /dev/null 2>&1

@@ -69,19 +69,22 @@ sudo dnf install gcc gcc-multilib nasm qemu-system-x86
 ```bash
 # Clone the repository
 git clone https://github.com/gavmen/Yrul3-0
-cd Yrul3-0/yrul-os
+cd Yrul3-0
 
-# Build the OS
-make
+# Quick setup (checks dependencies and builds)
+./setup.sh
 
-# Clean build files
-make clean
+# Manual build process
+cd yrul-os
+make clean && make
 ```
 
 ### Running
 
 #### Quick Start
 ```bash
+# From project root
+cd yrul-os
 ./test.sh
 ```
 

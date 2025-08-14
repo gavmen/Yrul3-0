@@ -1,7 +1,11 @@
 #!/bin/bash
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
 # Run all validation tests
-cd /home/gabriel/Yrul3-0/yrul-os
+cd "$PROJECT_DIR"
 
 echo "System Validation"
 echo ""
@@ -32,9 +36,6 @@ else
     echo "   Memory: FAILED"
     exit 1
 fi
-
-echo ""
-echo "SYSTEM STATUS: ALL TESTS PASSED"
 
 echo ""
 echo "SYSTEM STATUS: ALL TESTS PASSED"

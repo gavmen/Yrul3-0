@@ -3,8 +3,12 @@
 echo "Build Test"
 echo ""
 
+# Get the directory where this script is located
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
 # Build test
-cd /home/gabriel/Yrul3-0/yrul-os
+cd "$PROJECT_DIR"
 make clean > /dev/null 2>&1
 
 if make > build.log 2>&1; then
