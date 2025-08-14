@@ -37,5 +37,14 @@ else
     exit 1
 fi
 
+# Run scheduler validation
+echo "4. Scheduler validation:"
+if ./tests/scheduler_validation.sh | tail -n 1 | grep -q "OPERATIONAL"; then
+    echo "   Scheduler: PASSED"
+else
+    echo "   Scheduler: FAILED"
+    exit 1
+fi
+
 echo ""
 echo "SYSTEM STATUS: ALL TESTS PASSED"

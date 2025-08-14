@@ -26,7 +26,7 @@ void remap_pic(void) {
     outb(0xA1, 0x01);
     io_wait();
     
-    outb(0x21, 0xFD);
+    outb(0x21, 0xFC);
     outb(0xA1, 0xFF);
 }
 

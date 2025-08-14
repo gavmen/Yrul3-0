@@ -113,7 +113,6 @@ make run
 - **clear** - Clear screen
 - **info** - System information
 - **test** - Test display
-- **ver** - OS version
 - **mem** - Memory statistics
 
 ### Controls

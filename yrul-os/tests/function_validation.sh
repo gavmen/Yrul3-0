@@ -18,7 +18,7 @@ fi
 
 # Test core functions
 echo "Core Functions:"
-functions=("kernel_main" "keyboard_init" "mem_init" "print_message" "clear_screen" "remap_pic" "init_idt")
+functions=("kernel_main" "keyboard_init" "mem_init" "timer_init" "task_init" "print_message" "clear_screen" "remap_pic" "init_idt")
 passed=0
 
 for func in "${functions[@]}"; do
@@ -44,8 +44,22 @@ for func in "${mem_functions[@]}"; do
     fi
 done
 
-total=$((passed + mem_passed))
-total_expected=$((${#functions[@]} + ${#mem_functions[@]}))
+echo ""
+echo "Scheduler Functions:"
+sched_functions=("task_create" "task_schedule" "task_switch" "timer_handler")
+sched_passed=0
+
+for func in "${sched_functions[@]}"; do
+    if objdump -t yrul.bin | grep -q "$func"; then
+        echo "   $func: FOUND"
+        ((sched_passed++))
+    else
+        echo "   $func: MISSING"
+    fi
+done
+
+total=$((passed + mem_passed + sched_passed))
+total_expected=$((${#functions[@]} + ${#mem_functions[@]} + ${#sched_functions[@]}))
 
 echo ""
 echo "Function validation: $total/$total_expected functions found"

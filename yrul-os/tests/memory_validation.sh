@@ -22,22 +22,32 @@ fi
 echo "2. Memory functions"
 if objdump -t yrul.bin | grep -q "kmalloc\|kfree\|mem_init"; then
     echo "   Functions linked:"
-    objdump -t yrul.bin | grep -E "(kmalloc|kfree|mem_init)" | sed 's/^/     /'
+    objdump -t yrul.bin | grep -E "(kmalloc|kfree|mem_init|mem_get_free)" | sed 's/^/     /'
+else
+    echo "   Functions not found"
+    exit 1
+fi
+
+# Check scheduler functions are linked
+echo "3. Scheduler functions"
+if objdump -t yrul.bin | grep -q "task_init\|timer_init"; then
+    echo "   Functions linked:"
+    objdump -t yrul.bin | grep -E "(task_init|timer_init|task_create|task_schedule)" | sed 's/^/     /'
 else
     echo "   Functions not found"
     exit 1
 fi
 
 # Check binary size and sections
-echo "3. Binary structure"
+echo "4. Binary structure"
 size yrul.bin | sed 's/^/   /'
 
 # Check for memory-related symbols
-echo "4. Memory symbols:"
-objdump -t yrul.bin | grep -E "(heap|mem_)" | head -5 | sed 's/^/   /'
+echo "5. Memory symbols:"
+objdump -t yrul.bin | grep -E "(heap|mem_|task_|timer_)" | head -8 | sed 's/^/   /'
 
 # Verify no undefined symbols
-echo "5. Symbol check"
+echo "6. Symbol check"
 if objdump -t yrul.bin | grep -q "\*UND\*"; then
     echo "   Undefined symbols found:"
     objdump -t yrul.bin | grep "\*UND\*" | sed 's/^/     /'
@@ -46,7 +56,7 @@ else
 fi
 
 # Test kernel structure integrity  
-echo "6. Kernel sections"
+echo "7. Kernel sections"
 if objdump -h yrul.bin | grep -q "\.text\|\.data"; then
     echo "   Sections present:"
     objdump -h yrul.bin | grep -E "\.text|\.data|\.bss" | sed 's/^/     /'
@@ -55,4 +65,4 @@ else
 fi
 
 echo ""
-echo "Memory Management System: OPERATIONAL"
+echo "Enhanced Kernel System: OPERATIONAL"

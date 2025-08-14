@@ -25,8 +25,8 @@ KERNEL_BIN = yrul.bin
 all: $(KERNEL_BIN)
 
 # Source files
-C_SOURCES = src/kernel.c src/interrupts.c src/io.c src/keyboard.c src/string.c src/memory.c
-ASM_SOURCES = boot/boot.s src/keyboard_interrupt.s
+C_SOURCES = src/kernel.c src/interrupts.c src/io.c src/keyboard.c src/string.c src/memory.c src/timer.c src/task.c
+ASM_SOURCES = boot/boot.s src/keyboard_interrupt.s src/task_switch.s
 
 # Object files
 C_OBJECTS = $(C_SOURCES:.c=.o)

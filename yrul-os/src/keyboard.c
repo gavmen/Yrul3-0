@@ -2,6 +2,8 @@
 #include "io.h"
 #include "string.h"
 #include "memory.h"
+#include "timer.h"
+#include "task.h"
 
 static void execute_command(const char *cmd);
 static void show_help(void);
@@ -13,6 +15,7 @@ static void update_cursor(void);
 static void show_test_pattern(void);
 static void show_unknown_command(void);
 static void show_memory_info(void);
+static void show_process_info(void);
 extern void pic_acknowledge(uint8_t irq);
 
 static unsigned short *video_memory = (unsigned short *)0xB8000;
@@ -135,8 +138,12 @@ static void execute_command(const char *cmd) {
         show_system_info();
     } else if (strcmp(cmd, "test") == 0) {
         show_test_pattern();
+    } else if (strcmp(cmd, "ver") == 0) {
+        show_system_info();
     } else if (strcmp(cmd, "mem") == 0) {
         show_memory_info();
+    } else if (strcmp(cmd, "ps") == 0) {
+        show_process_info();
     } else {
         show_unknown_command();
     }
@@ -158,7 +165,7 @@ static void show_help(void) {
     print_string_to_line("info  - System information", 18, 0x0F);
     print_string_to_line("test  - Display test pattern", 19, 0x0F);
     print_string_to_line("mem   - Memory statistics", 20, 0x0F);
-    print_string_to_line("Use Backspace to edit, Enter to execute", 21, 0x0F);
+    print_string_to_line("ps    - Process information", 21, 0x0F);
 }
 
 static void clear_screen_area(void) {
@@ -303,5 +310,72 @@ static void show_memory_info(void) {
         video_memory[digit_pos + digits + 3] = (0x0A << 8) | 't';
         video_memory[digit_pos + digits + 4] = (0x0A << 8) | 'e';
         video_memory[digit_pos + digits + 5] = (0x0A << 8) | 's';
+    }
+}
+
+static void show_process_info(void) {
+    clear_command_output_area();
+    print_string_to_line("PROCESS INFORMATION:", 15, 0x0E);
+    
+    uint32_t ticks = timer_get_ticks();
+    int pos = 16 * 80;
+    const char *prefix = "System uptime: ";
+    for (int i = 0; prefix[i]; i++) {
+        video_memory[pos + i] = (0x0B << 8) | prefix[i];
+    }
+    
+    int digit_pos = pos + 15;
+    if (ticks == 0) {
+        video_memory[digit_pos] = (0x0B << 8) | '0';
+    } else {
+        int temp = ticks;
+        int digits = 0;
+        while (temp > 0) {
+            temp /= 10;
+            digits++;
+        }
+        if (digits > 8) digits = 8;
+        temp = ticks;
+        for (int i = digits - 1; i >= 0; i--) {
+            video_memory[digit_pos + i] = (0x0B << 8) | ('0' + (temp % 10));
+            temp /= 10;
+        }
+        video_memory[digit_pos + digits] = (0x0B << 8) | ' ';
+        video_memory[digit_pos + digits + 1] = (0x0B << 8) | 't';
+        video_memory[digit_pos + digits + 2] = (0x0B << 8) | 'i';
+        video_memory[digit_pos + digits + 3] = (0x0B << 8) | 'c';
+        video_memory[digit_pos + digits + 4] = (0x0B << 8) | 'k';
+        video_memory[digit_pos + digits + 5] = (0x0B << 8) | 's';
+    }
+    
+    print_string_to_line("Scheduler: Preemptive multitasking", 17, 0x0B);
+    print_string_to_line("Timer frequency: 100 Hz", 18, 0x0B);
+    
+    if (current_task) {
+        pos = 19 * 80;
+        const char *prefix2 = "Current PID: ";
+        for (int i = 0; prefix2[i]; i++) {
+            video_memory[pos + i] = (0x0A << 8) | prefix2[i];
+        }
+        
+        uint32_t pid = current_task->pid;
+        digit_pos = pos + 13;
+        if (pid == 0) {
+            video_memory[digit_pos] = (0x0A << 8) | '0';
+        } else {
+            int temp = pid;
+            int digits = 0;
+            while (temp > 0) {
+                temp /= 10;
+                digits++;
+            }
+            temp = pid;
+            for (int i = digits - 1; i >= 0; i--) {
+                video_memory[digit_pos + i] = (0x0A << 8) | ('0' + (temp % 10));
+                temp /= 10;
+            }
+        }
+    } else {
+        print_string_to_line("No active processes", 19, 0x0C);
     }
 }
