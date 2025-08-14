@@ -1,59 +1,58 @@
-# 🖥️ Yrul OS
+# Yrul OS
 
-**Yrul OS** is a simple, educational operating system built from scratch, current focusing on low-level hardware interaction, interrupt handling, and keyboard input management.
-
-**Yrul OS** é um sistema operacional simples e educacional construído do zero, com foco atual na interação de hardware de baixo nível, tratamento de interrupções e gerenciamento de entrada de teclado.
+**Yrul OS** is a simple, educational operating system built from scratch, focusing on low-level hardware interaction, interrupt handling, keyboard input management, and memory allocation.
 
 ---
 
-## 🎯 **Current Project Objectives / Objetivos Atuais do Projeto**
+## Current Project Status
 
-### **English**
+### Core Features
 - Create a minimal OS that boots on x86 architecture
 - Implement proper interrupt handling (PIC and IDT configuration)
 - Develop a working keyboard driver with PS/2 controller support
 - Provide a simple command-line interface
-
-### **Português**
-- Criar um OS mínimo que inicializa na arquitetura x86
-- Implementar tratamento adequado de interrupções (configuração PIC e IDT)
-- Desenvolver um driver de teclado funcional com suporte ao controlador PS/2
-- Fornecer uma interface de linha de comando simples
+- Heap-based dynamic memory management system
 
 ---
 
-## 🏗️ **Architecture / Arquitetura**
+## Architecture
 
-### **Components / Componentes**
+### Components
 
-#### **Boot System / Sistema de Boot**
-- **Multiboot compliant bootloader** / Bootloader compatível com Multiboot
-- **Supports both legacy and modern QEMU** / Suporta QEMU legado e moderno
-- **32-bit x86 architecture** / Arquitetura x86 de 32 bits
+#### Boot System
+- **Multiboot compliant bootloader**
+- **Supports both legacy and modern QEMU**
+- **32-bit x86 architecture**
 
-#### **Interrupt Management / Gerenciamento de Interrupções**
-- **PIC (Programmable Interrupt Controller) configuration** / Configuração do PIC
-- **IDT (Interrupt Descriptor Table) setup** / Configuração da IDT
-- **Hardware interrupt handling** / Tratamento de interrupções de hardware
+#### Interrupt Management
+- **PIC (Programmable Interrupt Controller) configuration**
+- **IDT (Interrupt Descriptor Table) setup**
+- **Hardware interrupt handling**
 
-#### **Keyboard System / Sistema de Teclado**
-- **PS/2 keyboard controller driver** / Driver do controlador de teclado PS/2
-- **Scancode to ASCII conversion** / Conversão de scancode para ASCII
-- **Interrupt-based input with polling fallback** / Entrada baseada em interrupções com fallback para polling
-- **Command line interface** / Interface de linha de comando
+#### Memory Management
+- **Heap-based allocation system**
+- **kmalloc() and kfree() functions**
+- **Memory statistics and diagnostics**
+- **1MB heap space at 0x200000**
 
-#### **Display System / Sistema de Exibição**
-- **VGA text mode (80x25)** / Modo texto VGA (80x25)
-- **Direct video memory manipulation** / Manipulação direta da memória de vídeo
-- **Color-coded output** / Saída com códigos de cor
+#### Keyboard System
+- **PS/2 keyboard controller driver**
+- **Scancode to ASCII conversion**
+- **Interrupt-based input processing**
+- **Command line interface with interactive commands**
+
+#### Display System
+- **VGA text mode (80x25)**
+- **Direct video memory manipulation**
+- **Color-coded output**
 
 ---
 
-## 🔧 **Building and Running / Compilação e Execução**
+## Building and Running
 
-### **Prerequisites / Pré-requisitos**
+### Prerequisites
 
-#### **Required Tools / Ferramentas Necessárias**
+#### Required Tools
 ```bash
 # Ubuntu/Debian
 sudo apt-get install gcc-multilib nasm qemu-system-x86
@@ -65,77 +64,66 @@ sudo pacman -S gcc-multilib nasm qemu-system-i386
 sudo dnf install gcc gcc-multilib nasm qemu-system-x86
 ```
 
-### **Building / Compilação**
+### Building
 
 ```bash
-# Clone the repository / Clone o repositório
+# Clone the repository
 git clone https://github.com/gavmen/Yrul3-0
 cd Yrul3-0/yrul-os
 
-# Build the OS / Compile o OS
+# Build the OS
 make
 
-# Clean build files / Limpe os arquivos de build
+# Clean build files
 make clean
 ```
 
-### **Running / Execução**
+### Running
 
-#### **Standard Execution / Execução Padrão**
+#### Quick Start
+```bash
+./test.sh
+```
+
+#### Standard Execution
 ```bash
 make run
 ```
 
-#### **Debug Mode / Modo Debug**
+#### Testing and Validation
 ```bash
-make run-debug
-# Use Ctrl+Alt+2 for QEMU monitor
-# Use Ctrl+Alt+1 to return to OS display
-```
+# Run all validation tests
+./tests/system_validation.sh
 
-#### **Create Bootable ISO / Criar ISO Bootável**
-```bash
-make iso
-# Creates yrul.iso for CD/DVD boot
-```
-
-### **Testing on Real Hardware / Teste em Hardware Real**
-
-#### **USB Installation / Instalação em USB**
-```bash
-# WARNING: This will erase the USB device
-# ATENÇÃO: Isso apagará o dispositivo USB
-make install-usb USB_DEVICE=/dev/sdX
+# Run individual tests
+./tests/build_test.sh
+./tests/function_validation.sh
+./tests/memory_validation.sh
 ```
 
 ---
 
-## 🎮 **Usage / Uso**
+## Usage
 
-### **User Interface / Interface do Usuário**
+### Available Commands
+- **help** - Show available commands
+- **clear** - Clear screen
+- **info** - System information
+- **test** - Test display
+- **ver** - OS version
+- **mem** - Memory statistics
 
-#### **Boot Process / Processo de Boot**
-1. **System initializes** / Sistema inicializa
-2. **Hardware components configured** / Componentes de hardware configurados
-3. **Keyboard driver loaded** / Driver de teclado carregado
-4. **Command prompt appears** / Prompt de comando aparece
-
-#### **Keyboard Input / Entrada de Teclado**
-- **Type characters** on line 22 / Digite caracteres na linha 22
-- **Press Enter** to execute commands / Pressione Enter para executar comandos
-- **Use Backspace** to correct mistakes / Use Backspace para corrigir erros
-- **Visual feedback** with cursor display / Feedback visual com exibição do cursor
-
-#### **System Indicators / Indicadores do Sistema**
-- **Top-right corner**: Interrupt count and scancode display / Canto superior direito: Contagem de interrupções e exibição de scancode
-- **Bottom area**: System status and mode indicators / Área inferior: Status do sistema e indicadores de modo
-- **Line 23**: Processed commands display / Linha 23: Exibição de comandos processados
+### Controls
+- **Type** to input text
+- **Enter** to execute command
+- **Backspace** to correct errors
+- **Ctrl+C** to exit QEMU
 
 ---
 
-## 🛠️ **Technical Details / Detalhes Técnicos**
+## Technical Details
 
-### **File Structure / Estrutura de Arquivos**
+### File Structure
 
 ```
 yrul-os/
@@ -145,96 +133,78 @@ yrul-os/
 │   └── linker.ld       # Linker script
 ├── src/
 │   ├── kernel.c        # Main kernel
-│   ├── interrupts.c    # Interrupt management
-│   ├── keyboard.c      # Keyboard driver
-│   ├── io.c           # I/O operations
-│   ├── pic_acknowledge.s # PIC interrupt acknowledgment
-│   └── *.h            # Header files
-└── Makefile           # Build system
+│   ├── interrupts.c/h  # Interrupt management
+│   ├── keyboard.c/h    # Keyboard driver
+│   ├── memory.c/h      # Memory management
+│   ├── io.c/h         # I/O operations
+│   ├── string.c/h      # String utilities
+│   └── types.h        # Type definitions
+├── tests/
+│   ├── build_test.sh          # Build validation
+│   ├── function_validation.sh # Function verification
+│   ├── memory_validation.sh   # Memory system test
+│   └── system_validation.sh   # Complete validation
+├── Makefile           # Build system
+└── test.sh           # Project startup script
 ```
 
-### **Memory Layout / Layout de Memória**
-- **Kernel loaded at**: 1MB (0x100000) / Kernel carregado em: 1MB
-- **Video memory**: 0xB8000 (VGA text mode) / Memória de vídeo: 0xB8000
-- **Stack**: High memory, grows downward / Stack: Memória alta, cresce para baixo
+### Memory Layout
+- **Kernel loaded at**: 1MB (0x100000)
+- **Heap space**: 1MB starting at 0x200000
+- **Video memory**: 0xB8000 (VGA text mode)
+- **Stack**: High memory, grows downward
 
-### **Interrupt Configuration / Configuração de Interrupções**
-- **PIC remapped**: Master (0x20-0x27), Slave (0x28-0x2F) / PIC remapeado
-- **Keyboard IRQ**: IRQ1 (INT 0x21) / IRQ do teclado: IRQ1
-- **IDT size**: 256 entries / Tamanho da IDT: 256 entradas
-
----
-
-## 🚀 **Features / Funcionalidades**
-
-### **Current Features / Funcionalidades Atuais**
-- ✅ **Multiboot-compliant bootloader** / Bootloader compatível com Multiboot
-- ✅ **Hardware interrupt handling** / Tratamento de interrupções de hardware
-- ✅ **PS/2 keyboard driver** / Driver de teclado PS/2
-- ✅ **VGA text mode display** / Exibição em modo texto VGA
-- ✅ **Command line interface** / Interface de linha de comando
-- ✅ **Automatic interrupt/polling fallback** / Fallback automático interrupção/polling
-- ✅ **Real-time system monitoring** / Monitoramento do sistema em tempo real
-
-### **Planned Features / Funcionalidades Planejadas**
-- 🔄 **Basic command interpreter** / Interpretador básico de comandos
-- 🔄 **Memory management** / Gerenciamento de memória
-- 🔄 **Basic file system** / Sistema de arquivos básico
-- 🔄 **Process management** / Gerenciamento de processos
-- 🔄 **Timer interrupts** / Interrupções de timer
+### Interrupt Configuration
+- **PIC remapped**: Master (0x20-0x27), Slave (0x28-0x2F)
+- **Keyboard IRQ**: IRQ1 (INT 0x21)
+- **IDT size**: 256 entries
 
 ---
 
-## 🐛 **Troubleshooting / Solução de Problemas**
+## Features
 
-### **Common Issues / Problemas Comuns**
+### Current Features
+- Multiboot-compliant bootloader
+- Hardware interrupt handling
+- PS/2 keyboard driver
+- VGA text mode display
+- Command line interface
+- Heap-based memory management
+- Interactive command system
+- Comprehensive validation test suite
 
-#### **Keyboard Not Working / Teclado Não Funciona**
-**English**: The system automatically detects if interrupts are not working and switches to polling mode. Look for "POLL" indicator in the bottom-right corner.
-
-**Português**: O sistema detecta automaticamente se as interrupções não estão funcionando e muda para modo polling. Procure pelo indicador "POLL" no canto inferior direito.
-
-#### **System Hangs / Sistema Trava**
-**English**: Ensure QEMU version compatibility. Try different QEMU parameters or test on real hardware.
-
-**Português**: Verifique a compatibilidade da versão do QEMU. Tente parâmetros diferentes do QEMU ou teste em hardware real.
-
-#### **Build Errors / Erros de Compilação**
-**English**: Ensure all required tools are installed and you have proper 32-bit compilation support.
-
-**Português**: Verifique se todas as ferramentas necessárias estão instaladas e se você tem suporte adequado para compilação de 32 bits.
+### System Components
+- Kernel initialization and main loop
+- Interrupt descriptor table (IDT) setup
+- Programmable interrupt controller (PIC) configuration
+- Memory allocator with kmalloc/kfree functions
+- String manipulation utilities
+- I/O port operations
 
 ---
 
+## Troubleshooting
 
-## 📜 **License / Licença**
+### Common Issues
+
+#### Build Errors
+Ensure all required tools are installed and you have proper 32-bit compilation support.
+
+#### System Hangs
+Ensure QEMU version compatibility. Try different QEMU parameters.
+
+#### Keyboard Not Working
+The system uses interrupt-based keyboard input. Check hardware compatibility.
+
+---
+
+## License
 
 This project is released under the MIT License. See LICENSE file for details.
 
-Este projeto é liberado sob a Licença MIT. Veja o arquivo LICENSE para detalhes.
-
 ---
 
-## 🙏 **Acknowledgments / Agradecimentos**
+## Project Status
 
-### **References / Referências**
-- **OSDev Wiki**: Comprehensive OS development resource
-- **Intel Architecture Manuals**: Hardware specification reference
-- **QEMU Documentation**: Emulation platform guidance
-- **GCC Cross-Compilation**: Toolchain setup information
-
-### **Inspiration / Inspiração**
-This project was inspired by educational OS projects and the need for a simple, understandable example of low-level system programming.
-
-Este projeto foi inspirado por projetos educacionais de OS e a necessidade de um exemplo simples e compreensível de programação de sistemas de baixo nível.
-
----
-
-## 📞 **Contact / Contato**
-
-For questions, suggestions, or contributions, please open an issue or submit a pull request.
-
-Para dúvidas, sugestões ou contribuições, por favor abra uma issue ou envie um pull request.
-
-**Project Status**: Active Development / Desenvolvimento Ativo  
-**Last Updated**: July 2025 / Última Atualização: Julho 2025
+**Status**: Active Development  
+**Last Updated**: August 2025

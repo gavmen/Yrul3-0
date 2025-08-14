@@ -1,17 +1,23 @@
-#Cross-Compiler Bin
+# Cross-Compiler Bin
 yrul-os/cross-compiler
 
-#Boot and Kernel Bin
-yrul-os/boot/boot.o
-yrul-os/src/kernel.o
-yrul-os/src/interrupts.o
-yrul-os/src/pic_acknowledge.o
-yrul-os/src/io.o
+# Build artifacts
+yrul-os/src/*.o
+yrul-os/boot/*.o
 yrul-os/yrul.bin
-yrul-os/src/pic_acknowledge.o
-yrul-os/src/keyboard.o
-yrul-os/src/keyboard_interrupt.o
-yrul-os/src/string.o
 
-#Infos
-yrul-os/FIXES_IMPLEMENTED.md
+# Logs and temporary files
+yrul-os/build.log
+yrul-os/boot.log
+*.log
+*.tmp
+*.bak
+*.backup
+*~
+*.swp
+*.swo
+core
+a.out
+
+# Memory test binaries
+yrul-os/memory_test

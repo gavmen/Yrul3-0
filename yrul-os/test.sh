@@ -1,73 +1,54 @@
 #!/bin/bash
 
-# Yrul OS Test Script - ENHANCED VERSION
-# Script de Teste do Yrul OS - VERSÃO MELHORADA
+# Yrul OS Project Startup Script
 
-echo "🖥️  YRUL OS - ENHANCED TEST EXECUTION"
-echo "🖥️  YRUL OS - EXECUÇÃO DE TESTE MELHORADA"
-echo "========================================="
+echo "YRUL OS - PROJECT STARTUP"
+echo "=========================="
 
 # Check if we're in the right directory
 if [ ! -f "Makefile" ]; then
-    echo "❌ Error: Not in yrul-os directory / Erro: Não está no diretório yrul-os"
-    echo "Please run from yrul-os/ directory / Execute do diretório yrul-os/"
+    echo "Error: Not in yrul-os directory"
+    echo "Please run from yrul-os/ directory"
     exit 1
 fi
 
 # Build the OS
-echo "🔧 Building Yrul OS / Compilando Yrul OS..."
+echo "Building Yrul OS..."
 if make clean > /dev/null 2>&1 && make > /dev/null 2>&1; then
-    echo "✅ Build successful / Compilação bem-sucedida!"
+    echo "Build successful"
 else
-    echo "❌ Build failed / Falha na compilação!"
-    echo "Run 'make' manually to see errors / Execute 'make' manualmente para ver erros"
+    echo "Build failed"
+    echo "Run 'make' manually to see errors"
     exit 1
 fi
 
 echo ""
-echo "🎯 ENHANCED SYSTEM FEATURES / FUNCIONALIDADES MELHORADAS:"
-echo "   • ✅ Fixed keyboard mapping (q→q, e→e, correct characters)"
-echo "   • ✅ Anti-duplication system (no more double characters)"
-echo "   • ✅ Persistent command display (stays visible longer)"
-echo "   • ✅ Enhanced command system with 6 commands"
-echo "   • ✅ Improved debug indicators"
-echo "   • ✅ Better error handling and feedback"
+echo "SYSTEM FEATURES:"
+echo "   • 32-bit x86 kernel with multiboot compliance"
+echo "   • VGA text mode display (80x25)"
+echo "   • PS/2 keyboard driver with interrupt handling"  
+echo "   • Heap-based memory management (kmalloc/kfree)"
+echo "   • Command-line interface with interactive commands"
 echo ""
-echo "📋 AVAILABLE COMMANDS / COMANDOS DISPONÍVEIS:"
-echo "   • help  - Show all available commands"
-echo "   • clear - Clear command display area"
-echo "   • info  - Detailed system information"
-echo "   • test  - Display colorful test pattern"
-echo "   • ver   - Show OS version information"
-echo "   • [any] - Unknown command handling"
+echo "AVAILABLE COMMANDS:"
+echo "   • help  - Show available commands"
+echo "   • clear - Clear screen"
+echo "   • info  - System information"
+echo "   • test  - Test display"
+echo "   • ver   - OS version"
+echo "   • mem   - Memory statistics"
 echo ""
-echo "🎮 CONTROLS / CONTROLES:"
-echo "   • Type to input text / Digite para inserir texto"
-echo "   • Enter to execute command / Enter para executar comando"
-echo "   • Backspace to correct / Backspace para corrigir"
-echo "   • Ctrl+C to exit QEMU / Ctrl+C para sair do QEMU"
-echo ""
-echo "🔍 DEBUG INDICATORS / INDICADORES DE DEBUG:"
-echo "   • Top-right corner: Interrupt count, scancode (hex), ASCII char"
-echo "   • Bottom-right: System mode (IRQ/POLL) and execution status"
-echo "   • Line 23: Processed commands (persistent display)"
-echo "   • Real-time feedback for all user interactions"
-echo ""
-echo "🐛 FIXES APPLIED / CORREÇÕES APLICADAS:"
-echo "   • ✅ Scancode to ASCII mapping corrected"
-echo "   • ✅ Anti-duplication system improved"
-echo "   • ✅ Command persistence timer implemented"
-echo "   • ✅ Enhanced visual feedback"
-echo "   • ✅ Robust error handling"
+echo "CONTROLS:"
+echo "   • Type to input text"
+echo "   • Enter to execute command"
+echo "   • Backspace to correct"
+echo "   • Ctrl+C to exit QEMU"
 echo ""
 
-read -p "🚀 Press Enter to start Enhanced Yrul OS / Pressione Enter para iniciar Yrul OS Melhorado..."
+read -p "Press Enter to start Yrul OS..."
 
-echo "🎮 Starting Enhanced Yrul OS / Iniciando Yrul OS Melhorado..."
-echo "   Test the keyboard fixes by typing: q, e, a, help, info, test"
-echo "   Using stable mode to prevent QEMU pause issues"
-echo ""
+echo "Starting Yrul OS..."
 make run-stable
 
 echo ""
-echo "🏁 Yrul OS test completed / Teste do Yrul OS finalizado!"
+echo "Yrul OS session completed"
